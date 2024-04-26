@@ -22,6 +22,8 @@ locals {
     "1.13.1-gpu" = "1.13.1-transformers${var.transformers_version}-gpu-py39-cu117-ubuntu20.04"
     "2.0.0-cpu"  = "2.0.0-transformers${var.transformers_version}-cpu-py310-ubuntu20.04"
     "2.0.0-gpu"  = "2.0.0-transformers${var.transformers_version}-gpu-py310-cu118-ubuntu20.04"
+    "2.1.0-cpu"  = "2.1.0-transformers${var.transformers_version}-cpu-py310-ubuntu22.04"
+    "2.1.0-gpu"  = "2.1.0-transformers${var.transformers_version}-gpu-py310-cu118-ubuntu20.04"
   }
   tensorflow_image_tag = {
     "2.4.1-gpu" = "2.4.1-transformers${var.transformers_version}-gpu-py37-cu110-ubuntu18.04"
@@ -34,6 +36,7 @@ locals {
     asynchronous = (var.async_config.s3_output_path != null && var.serverless_config.max_concurrency == null) ? true : false
     serverless   = (var.async_config.s3_output_path == null && var.serverless_config.max_concurrency != null) ? true : false
   }
+
 }
 
 # random lowercase string used for naming
@@ -170,9 +173,10 @@ locals {
 # SageMaker Endpoint configuration
 # ------------------------------------------------------------------------------
 
+
 resource "aws_sagemaker_endpoint_configuration" "huggingface" {
   count = local.sagemaker_endpoint_type.real_time ? 1 : 0
-  name  = "${var.name_prefix}-ep-config-${random_string.resource_id.result}"
+  name  = "${var.sagemaker_endpoint_name}-ep-config"
   tags  = var.tags
 
 
@@ -187,7 +191,7 @@ resource "aws_sagemaker_endpoint_configuration" "huggingface" {
 
 resource "aws_sagemaker_endpoint_configuration" "huggingface_async" {
   count = local.sagemaker_endpoint_type.asynchronous ? 1 : 0
-  name  = "${var.name_prefix}-ep-config-${random_string.resource_id.result}"
+  name = "${var.sagemaker_endpoint_name}-ep-config"
   tags  = var.tags
 
 
@@ -213,7 +217,7 @@ resource "aws_sagemaker_endpoint_configuration" "huggingface_async" {
 
 resource "aws_sagemaker_endpoint_configuration" "huggingface_serverless" {
   count = local.sagemaker_endpoint_type.serverless ? 1 : 0
-  name  = "${var.name_prefix}-ep-config-${random_string.resource_id.result}"
+  name = "${var.sagemaker_endpoint_name}-ep-config"
   tags  = var.tags
 
 
@@ -248,7 +252,7 @@ locals {
 
 
 resource "aws_sagemaker_endpoint" "huggingface" {
-  name = "${var.name_prefix}-ep-${random_string.resource_id.result}"
+  name = "${var.sagemaker_endpoint_name}-ep"
   tags = var.tags
 
   endpoint_config_name = local.sagemaker_endpoint_config.name

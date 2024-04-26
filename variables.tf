@@ -135,3 +135,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "sagemaker_endpoint_name" {
+  description = "Name of the SageMaker endpoint that will be deployed. If the name already exists, the endpoint will be updated."
+  type        = string
+}
