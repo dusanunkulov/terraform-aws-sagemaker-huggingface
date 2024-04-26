@@ -6,7 +6,7 @@ With this module you can deploy [Hugging Face Transformer](hf.co/models) directl
 
 ## Usage
 
-**basic example**
+**basic example(Original)**
 
 ```hcl
 module "sagemaker-huggingface" {
@@ -21,7 +21,23 @@ module "sagemaker-huggingface" {
   hf_task              = "text-classification"
 }
 ```
-
+In order to use this revision with idempotency enabled, you must specify the sagemaker_endpoint_name as an input.
+What you provide here will be used to create the endpoint/endpoint configuration.
+This means that if an endpoint already exists with this name, Terraform will detect no changes, and do nothing.
+Also, you must change the source to point to this revision, as below.
+```hcl
+module "sagemaker-huggingface" {
+  source               = "github.com/dusanunkulov/terraform-aws-sagemaker-huggingface?ref=idempotency-enabled"
+  name_prefix          = "translation-service"
+  pytorch_version      = "2.1.0"
+  transformers_version = "4.37.0"
+  instance_type        = "ml.g4dn.xlarge"
+  instance_count       = 1 # default is 1
+  hf_model_id          = "facebook/seamless-m4t-v2-large"
+  hf_task              = "text2text-generation"
+  sagemaker_endpoint_name = 'm4tseamless-v2-example'
+}
+```
 **advanced example with autoscaling**
 
 ```hcl
